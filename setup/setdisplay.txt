@@ -1,0 +1,3 @@
+Arduino_DataBus *bus = new Arduino_ESP32SPI(2, 15, 18, 23, GFX_NOT_DEFINED);
+Arduino_GFX *gfx = new Arduino_ILI9342(bus, 4, 0);
+#define CANVAS
