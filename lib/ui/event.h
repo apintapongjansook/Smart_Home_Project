@@ -13,6 +13,8 @@ extern "C"
 {
 #endif
     void event_handler(lv_event_t *e);
+    void updatetime_daytime(lv_timer_t *timer);
+    void setuprtc();
 
 #ifdef __cplusplus
 }

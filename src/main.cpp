@@ -82,6 +82,7 @@ static lv_disp_draw_buf_t draw_buf;
 static lv_color_t *disp_draw_buf;
 static lv_disp_drv_t disp_drv;
 
+
 /* Display flushing */
 void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
 {
@@ -125,6 +126,8 @@ void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data)
 void setup()
 {
   Serial.begin(115200);
+
+
   // Serial.setDebugOutput(true);
   // while(!Serial);
   Serial.println("Arduino_GFX LVGL Widgets example");
@@ -217,6 +220,20 @@ void setup()
     lv_obj_add_event_cb(objects.password_txarea, event_handler,LV_EVENT_FOCUSED,NULL);
     lv_obj_add_event_cb(objects.keyboard_login, event_handler,LV_EVENT_ALL,NULL);
     lv_obj_add_event_cb(objects.login_bt, event_handler,LV_EVENT_CLICKED,NULL);
+
+    lv_obj_add_event_cb(objects.graph_bt, event_handler,LV_EVENT_CLICKED,NULL);
+    lv_obj_add_event_cb(objects.setting_bt, event_handler,LV_EVENT_CLICKED,NULL);
+    lv_obj_add_event_cb(objects.logout_bt, event_handler,LV_EVENT_CLICKED,NULL);
+    lv_obj_add_event_cb(objects.monitor_bt_1, event_handler,LV_EVENT_CLICKED,NULL);
+    lv_obj_add_event_cb(objects.graph_bt_1, event_handler,LV_EVENT_CLICKED,NULL);
+    lv_obj_add_event_cb(objects.logout_bt_1, event_handler,LV_EVENT_CLICKED,NULL);
+    lv_obj_add_event_cb(objects.monitor_bt_2, event_handler,LV_EVENT_CLICKED,NULL);
+    lv_obj_add_event_cb(objects.setting_bt_2, event_handler,LV_EVENT_CLICKED,NULL);
+    lv_obj_add_event_cb(objects.logout_bt_2, event_handler,LV_EVENT_CLICKED,NULL);
+
+    lv_timer_create(updatetime_daytime,1000,NULL);
+    setuprtc();
+
     Serial.println("Setup done");
   }
 }
@@ -226,7 +243,6 @@ void loop()
 
   
   lv_timer_handler(); /* let the GUI do its work */
-
 #ifdef DIRECT_MODE
 #if (LV_COLOR_16_SWAP != 0)
   gfx->draw16bitBeRGBBitmap(0, 0, (uint16_t *)disp_draw_buf, screenWidth, screenHeight);

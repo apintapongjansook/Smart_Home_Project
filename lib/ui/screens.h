@@ -8,36 +8,63 @@ extern "C" {
 #endif
 
 typedef struct _objects_t {
-    lv_obj_t *login;
-    lv_obj_t *main;
+    lv_obj_t *login_page;
+    lv_obj_t *home_page;
+    lv_obj_t *setting_page;
+    lv_obj_t *graph_page;
     lv_obj_t *obj0;
     lv_obj_t *password_txarea;
     lv_obj_t *login_bt;
     lv_obj_t *username_txarea;
     lv_obj_t *keyboard_login;
+    lv_obj_t *datetime;
+    lv_obj_t *time_display;
+    lv_obj_t *day_display;
+    lv_obj_t *light_motion;
     lv_obj_t *obj1;
+    lv_obj_t *temp_humid;
     lv_obj_t *obj2;
     lv_obj_t *obj3;
     lv_obj_t *obj4;
     lv_obj_t *obj5;
-    lv_obj_t *obj6;
-    lv_obj_t *obj7;
+    lv_obj_t *monitor_bt;
+    lv_obj_t *graph_bt;
+    lv_obj_t *setting_bt;
+    lv_obj_t *logout_bt;
+    lv_obj_t *monitor_bt_1;
+    lv_obj_t *graph_bt_1;
+    lv_obj_t *setting_bt_1;
+    lv_obj_t *logout_bt_1;
+    lv_obj_t *monitor_bt_2;
+    lv_obj_t *graph_bt_2;
+    lv_obj_t *setting_bt_2;
+    lv_obj_t *logout_bt_2;
 } objects_t;
 
 extern objects_t objects;
 
 enum ScreensEnum {
-    SCREEN_ID_LOGIN = 1,
-    SCREEN_ID_MAIN = 2,
+    SCREEN_ID_LOGIN_PAGE = 1,
+    SCREEN_ID_HOME_PAGE = 2,
+    SCREEN_ID_SETTING_PAGE = 3,
+    SCREEN_ID_GRAPH_PAGE = 4,
 };
 
-void create_screen_login();
-void delete_screen_login();
-void tick_screen_login();
+void create_screen_login_page();
+void delete_screen_login_page();
+void tick_screen_login_page();
 
-void create_screen_main();
-void delete_screen_main();
-void tick_screen_main();
+void create_screen_home_page();
+void delete_screen_home_page();
+void tick_screen_home_page();
+
+void create_screen_setting_page();
+void delete_screen_setting_page();
+void tick_screen_setting_page();
+
+void create_screen_graph_page();
+void delete_screen_graph_page();
+void tick_screen_graph_page();
 
 void create_screen_by_id(enum ScreensEnum screenId);
 void delete_screen_by_id(enum ScreensEnum screenId);
