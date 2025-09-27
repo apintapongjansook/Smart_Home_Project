@@ -15,6 +15,10 @@ extern "C"
     void event_handler(lv_event_t *e);
     void updatetime_daytime(lv_timer_t *timer);
     void setuprtc();
+    void sound_timer(lv_timer_t *timer);
+    void setupledc();
+    void ledc(lv_timer_t *timer);
+    void touchsleep(lv_timer_t *timer);
 
 #ifdef __cplusplus
 }

@@ -82,6 +82,8 @@ static lv_disp_draw_buf_t draw_buf;
 static lv_color_t *disp_draw_buf;
 static lv_disp_drv_t disp_drv;
 
+int LED1 = 16;
+int *pLED1 = &LED1;
 
 /* Display flushing */
 void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
@@ -126,6 +128,7 @@ void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data)
 void setup()
 {
   Serial.begin(115200);
+  pinMode(LED1,OUTPUT);
 
 
   // Serial.setDebugOutput(true);
@@ -231,7 +234,12 @@ void setup()
     lv_obj_add_event_cb(objects.setting_bt_2, event_handler,LV_EVENT_CLICKED,NULL);
     lv_obj_add_event_cb(objects.logout_bt_2, event_handler,LV_EVENT_CLICKED,NULL);
 
+    lv_obj_add_flag(objects.login_page, LV_OBJ_FLAG_SCROLLABLE);
+
     lv_timer_create(updatetime_daytime,1000,NULL);
+    lv_timer_create(sound_timer,10,NULL);
+    lv_timer_create(ledc,100,NULL);
+    lv_timer_create(touchsleep,100,NULL);
     setuprtc();
 
     Serial.println("Setup done");

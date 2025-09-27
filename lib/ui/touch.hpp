@@ -1,3 +1,4 @@
+#include <XPT2046_Touchscreen.h>
 extern __INT16_TYPE__ touch_raw_x;
 extern __INT16_TYPE__ touch_raw_y;
 extern __INT16_TYPE__ touch_last_x;
@@ -9,6 +10,7 @@ extern __INT16_TYPE__ touch_map_y1;
 extern __INT16_TYPE__ touch_map_y2;
 extern __INT16_TYPE__ touch_max_x;
 extern __INT16_TYPE__ touch_max_y;
+extern XPT2046_Touchscreen ts;
 void touch_init(__INT16_TYPE__ w, __INT16_TYPE__ h, __UINT8_TYPE__ r);
 bool touch_has_signal();
 void translate_touch_raw();

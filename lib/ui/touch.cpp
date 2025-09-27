@@ -14,6 +14,7 @@
 #define TOUCH_XPT2046_MISO 19
 #define TOUCH_XPT2046_MOSI 23
 #define TOUCH_XPT2046_CS 27
+#define TOUCH_XPT2046_TIRQ 33
 // #define TOUCH_XPT2046_INT 3
 #define TOUCH_XPT2046_ROTATION 0
 #define TOUCH_XPT2046_SAMPLES 50
@@ -40,7 +41,7 @@ int16_t touch_last_x = 0, touch_last_y = 0;
 #if defined(TOUCH_XPT2046)
 #include <XPT2046_Touchscreen.h>
 #include <SPI.h>
-XPT2046_Touchscreen ts(TOUCH_XPT2046_CS);
+XPT2046_Touchscreen ts(TOUCH_XPT2046_CS,TOUCH_XPT2046_TIRQ);
 
 #elif defined(TOUCH_MODULE_ADDR) // TouchLib
 #include <Wire.h>
