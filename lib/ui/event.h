@@ -19,6 +19,7 @@ extern "C"
     void setupledc();
     void ledc(lv_timer_t *timer);
     void touchsleep(lv_timer_t *timer);
+    void lightsensor(lv_timer_t *timer);
 
 #ifdef __cplusplus
 }

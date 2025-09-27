@@ -224,15 +224,10 @@ void setup()
     lv_obj_add_event_cb(objects.keyboard_login, event_handler,LV_EVENT_ALL,NULL);
     lv_obj_add_event_cb(objects.login_bt, event_handler,LV_EVENT_CLICKED,NULL);
 
-    lv_obj_add_event_cb(objects.graph_bt, event_handler,LV_EVENT_CLICKED,NULL);
     lv_obj_add_event_cb(objects.setting_bt, event_handler,LV_EVENT_CLICKED,NULL);
     lv_obj_add_event_cb(objects.logout_bt, event_handler,LV_EVENT_CLICKED,NULL);
     lv_obj_add_event_cb(objects.monitor_bt_1, event_handler,LV_EVENT_CLICKED,NULL);
-    lv_obj_add_event_cb(objects.graph_bt_1, event_handler,LV_EVENT_CLICKED,NULL);
     lv_obj_add_event_cb(objects.logout_bt_1, event_handler,LV_EVENT_CLICKED,NULL);
-    lv_obj_add_event_cb(objects.monitor_bt_2, event_handler,LV_EVENT_CLICKED,NULL);
-    lv_obj_add_event_cb(objects.setting_bt_2, event_handler,LV_EVENT_CLICKED,NULL);
-    lv_obj_add_event_cb(objects.logout_bt_2, event_handler,LV_EVENT_CLICKED,NULL);
 
     lv_obj_add_flag(objects.login_page, LV_OBJ_FLAG_SCROLLABLE);
 
@@ -240,6 +235,7 @@ void setup()
     lv_timer_create(sound_timer,10,NULL);
     lv_timer_create(ledc,100,NULL);
     lv_timer_create(touchsleep,100,NULL);
+    lv_timer_create(lightsensor,100,NULL);
     setuprtc();
 
     Serial.println("Setup done");

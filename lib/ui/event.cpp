@@ -4,8 +4,11 @@
 #include <XPT2046_Touchscreen.h>
 #include <SPI.h>
 #include "touch.hpp"
+#include <ESP32Servo.h>
+
 
 ESP32Time rtc(3600*7);
+Servo myServo;
 
 //--------------setup sound sensor---------//
 const int micPin = 26;   // ขา ADC ของ ESP32
@@ -31,6 +34,8 @@ bool ledState = false;
 int TIMEOUT = 30000 ;  // เวลา timeout 15 วินาที
 
 unsigned long lastTouchMillis = 0;
+
+#define LDR_DO 21
 
 
 
@@ -59,9 +64,6 @@ void event_handler(lv_event_t *e) {
         }
     }
     //หน้า monitor
-    else if(obj == objects.graph_bt && code == LV_EVENT_CLICKED){
-        lv_scr_load(objects.graph_page);
-    }
     else if(obj == objects.setting_bt && code == LV_EVENT_CLICKED){
         lv_scr_load(objects.setting_page);
     }
@@ -73,21 +75,7 @@ void event_handler(lv_event_t *e) {
     else if(obj == objects.monitor_bt_1 && code == LV_EVENT_CLICKED){
         lv_scr_load(objects.home_page);
     }
-    else if(obj == objects.graph_bt_1 && code == LV_EVENT_CLICKED){
-        lv_scr_load(objects.graph_page);
-    }
     else if(obj == objects.logout_bt_1 && code == LV_EVENT_CLICKED){
-        lv_scr_load(objects.login_page);
-    }
-
-    //หน้า Graph
-    else if(obj == objects.monitor_bt_2 && code == LV_EVENT_CLICKED){
-        lv_scr_load(objects.home_page);
-    }
-    else if(obj == objects.setting_bt_2 && code == LV_EVENT_CLICKED){
-        lv_scr_load(objects.setting_page);
-    }
-    else if(obj == objects.logout_bt_2 && code == LV_EVENT_CLICKED){
         lv_scr_load(objects.login_page);
     }
 
@@ -99,6 +87,30 @@ void setuprtc(){
     ledcSetup(LEDC_CHANNEL, LEDC_FREQ, LEDC_TIMER);
     ledcAttachPin(LED_PIN, LEDC_CHANNEL);
     lastTouchMillis = millis();
+    pinMode(LDR_DO, INPUT);
+    myServo.attach(13);
+    
+    for (int pos = 0; pos <= 180; pos++) {
+    myServo.write(pos);   
+    delay(15);            
+    }
+
+    // หมุนกลับจาก 180° ไป 0°
+    for (int pos = 180; pos >= 0; pos--) {
+        myServo.write(pos);
+        delay(15);
+    }
+
+    for (int pos = 0; pos <= 180; pos++) {
+    myServo.write(pos);   
+    delay(15);            
+    }
+
+    // หมุนกลับจาก 180° ไป 0°
+    for (int pos = 180; pos >= 0; pos--) {
+        myServo.write(pos);
+        delay(15);
+    }
 }
 
 
@@ -197,4 +209,14 @@ void touchsleep(lv_timer_t *timer){
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 0);
     esp_deep_sleep_start();
   }
+}
+
+void lightsensor(lv_timer_t *timer){
+    int rawval = digitalRead(LDR_DO);
+    if(rawval == 0){
+        lv_label_set_text(objects.light_status,"Light ON");
+    }
+    else if(rawval == 1){
+        lv_label_set_text(objects.light_status,"Light OFF");
+    }
 }

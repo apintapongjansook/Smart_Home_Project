@@ -178,9 +178,9 @@ void create_screen_home_page() {
             }
         }
         {
-            // motion
+            // motion&light
             lv_obj_t *obj = lv_obj_create(parent_obj);
-            objects.motion = obj;
+            objects.motion_light = obj;
             lv_obj_set_pos(obj, 54, 193);
             lv_obj_set_size(obj, 250, 41);
             lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
@@ -204,6 +204,21 @@ void create_screen_home_page() {
                     lv_obj_set_pos(obj, -6, -5);
                     lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                     lv_img_set_src(obj, &img_motion);
+                }
+                {
+                    lv_obj_t *obj = lv_img_create(parent_obj);
+                    lv_obj_set_pos(obj, 112, -1);
+                    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+                    lv_img_set_src(obj, &img_lamp);
+                }
+                {
+                    // light_status
+                    lv_obj_t *obj = lv_label_create(parent_obj);
+                    objects.light_status = obj;
+                    lv_obj_set_pos(obj, 135, -1);
+                    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+                    lv_obj_set_style_text_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
+                    lv_label_set_text(obj, "Light ON");
                 }
             }
         }
@@ -362,29 +377,6 @@ void create_screen_home_page() {
                     }
                 }
                 {
-                    // graph_bt
-                    lv_obj_t *obj = lv_btn_create(parent_obj);
-                    objects.graph_bt = obj;
-                    lv_obj_set_pos(obj, -9, 42);
-                    lv_obj_set_size(obj, 27, 27);
-                    lv_obj_set_style_radius(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_shadow_width(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_outline_width(obj, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_outline_color(obj, lv_color_hex(0xfffbfbfb), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_color(obj, lv_color_hex(0xff22b3d9), LV_PART_MAIN | LV_STATE_PRESSED);
-                    {
-                        lv_obj_t *parent_obj = obj;
-                        {
-                            lv_obj_t *obj = lv_img_create(parent_obj);
-                            lv_obj_set_pos(obj, -11, -6);
-                            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-                            lv_img_set_src(obj, &img_graph);
-                        }
-                    }
-                }
-                {
                     // setting_bt
                     lv_obj_t *obj = lv_btn_create(parent_obj);
                     objects.setting_bt = obj;
@@ -445,8 +437,9 @@ void delete_screen_home_page() {
     objects.day_display = 0;
     objects.iconday = 0;
     objects.second_time_display_1 = 0;
-    objects.motion = 0;
+    objects.motion_light = 0;
     objects.obj1 = 0;
+    objects.light_status = 0;
     objects.pm = 0;
     objects.obj2 = 0;
     objects.obj3 = 0;
@@ -458,7 +451,6 @@ void delete_screen_home_page() {
     objects.obj8 = 0;
     objects.obj9 = 0;
     objects.monitor_bt = 0;
-    objects.graph_bt = 0;
     objects.setting_bt = 0;
     objects.logout_bt = 0;
 }
@@ -505,29 +497,6 @@ void create_screen_setting_page() {
                             lv_obj_set_pos(obj, -11, -6);
                             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                             lv_img_set_src(obj, &img_monitor);
-                        }
-                    }
-                }
-                {
-                    // graph_bt_1
-                    lv_obj_t *obj = lv_btn_create(parent_obj);
-                    objects.graph_bt_1 = obj;
-                    lv_obj_set_pos(obj, -9, 42);
-                    lv_obj_set_size(obj, 27, 27);
-                    lv_obj_set_style_radius(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_shadow_width(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_outline_width(obj, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_outline_color(obj, lv_color_hex(0xfffbfbfb), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_color(obj, lv_color_hex(0xff22b3d9), LV_PART_MAIN | LV_STATE_PRESSED);
-                    {
-                        lv_obj_t *parent_obj = obj;
-                        {
-                            lv_obj_t *obj = lv_img_create(parent_obj);
-                            lv_obj_set_pos(obj, -11, -6);
-                            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-                            lv_img_set_src(obj, &img_graph);
                         }
                     }
                 }
@@ -737,7 +706,6 @@ void delete_screen_setting_page() {
     objects.setting_page = 0;
     objects.obj10 = 0;
     objects.monitor_bt_1 = 0;
-    objects.graph_bt_1 = 0;
     objects.setting_bt_1 = 0;
     objects.logout_bt_1 = 0;
     objects.obj11 = 0;
@@ -757,133 +725,6 @@ void delete_screen_setting_page() {
 void tick_screen_setting_page() {
 }
 
-void create_screen_graph_page() {
-    lv_obj_t *obj = lv_obj_create(0);
-    objects.graph_page = obj;
-    lv_obj_set_pos(obj, 0, 0);
-    lv_obj_set_size(obj, 320, 240);
-    lv_obj_set_style_bg_color(obj, lv_color_hex(0xff000000), LV_PART_MAIN | LV_STATE_DEFAULT);
-    {
-        lv_obj_t *parent_obj = obj;
-        {
-            lv_obj_t *obj = lv_obj_create(parent_obj);
-            lv_obj_set_pos(obj, 0, 0);
-            lv_obj_set_size(obj, 38, 240);
-            lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
-            lv_obj_set_style_radius(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-            {
-                lv_obj_t *parent_obj = obj;
-                {
-                    // Monitor_bt_2
-                    lv_obj_t *obj = lv_btn_create(parent_obj);
-                    objects.monitor_bt_2 = obj;
-                    lv_obj_set_pos(obj, -10, -5);
-                    lv_obj_set_size(obj, 27, 27);
-                    lv_obj_set_style_radius(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_shadow_width(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_outline_width(obj, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_outline_color(obj, lv_color_hex(0xfffbfbfb), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_color(obj, lv_color_hex(0xff22b3d9), LV_PART_MAIN | LV_STATE_PRESSED);
-                    {
-                        lv_obj_t *parent_obj = obj;
-                        {
-                            lv_obj_t *obj = lv_img_create(parent_obj);
-                            lv_obj_set_pos(obj, -11, -6);
-                            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-                            lv_img_set_src(obj, &img_monitor);
-                        }
-                    }
-                }
-                {
-                    // graph_bt_2
-                    lv_obj_t *obj = lv_btn_create(parent_obj);
-                    objects.graph_bt_2 = obj;
-                    lv_obj_set_pos(obj, -9, 42);
-                    lv_obj_set_size(obj, 27, 27);
-                    lv_obj_set_style_radius(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_shadow_width(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_outline_width(obj, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_outline_color(obj, lv_color_hex(0xfffbfbfb), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_color(obj, lv_color_hex(0xff22b3d9), LV_PART_MAIN | LV_STATE_PRESSED);
-                    {
-                        lv_obj_t *parent_obj = obj;
-                        {
-                            lv_obj_t *obj = lv_img_create(parent_obj);
-                            lv_obj_set_pos(obj, -11, -6);
-                            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-                            lv_img_set_src(obj, &img_graph);
-                        }
-                    }
-                }
-                {
-                    // setting_bt_2
-                    lv_obj_t *obj = lv_btn_create(parent_obj);
-                    objects.setting_bt_2 = obj;
-                    lv_obj_set_pos(obj, -9, 126);
-                    lv_obj_set_size(obj, 27, 27);
-                    lv_obj_set_style_radius(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_shadow_width(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_outline_width(obj, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_outline_color(obj, lv_color_hex(0xfffbfbfb), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_color(obj, lv_color_hex(0xff22b3d9), LV_PART_MAIN | LV_STATE_PRESSED);
-                    {
-                        lv_obj_t *parent_obj = obj;
-                        {
-                            lv_obj_t *obj = lv_img_create(parent_obj);
-                            lv_obj_set_pos(obj, -12, -6);
-                            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-                            lv_img_set_src(obj, &img_setting);
-                        }
-                    }
-                }
-                {
-                    // logout_bt_2
-                    lv_obj_t *obj = lv_btn_create(parent_obj);
-                    objects.logout_bt_2 = obj;
-                    lv_obj_set_pos(obj, -8, 182);
-                    lv_obj_set_size(obj, 27, 27);
-                    lv_obj_set_style_radius(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_shadow_width(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_outline_width(obj, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_outline_color(obj, lv_color_hex(0xfffbfbfb), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_color(obj, lv_color_hex(0xff22b3d9), LV_PART_MAIN | LV_STATE_PRESSED);
-                    {
-                        lv_obj_t *parent_obj = obj;
-                        {
-                            lv_obj_t *obj = lv_img_create(parent_obj);
-                            lv_obj_set_pos(obj, -11, -6);
-                            lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-                            lv_img_set_src(obj, &img_exit);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    tick_screen_graph_page();
-}
-
-void delete_screen_graph_page() {
-    lv_obj_del(objects.graph_page);
-    objects.graph_page = 0;
-    objects.monitor_bt_2 = 0;
-    objects.graph_bt_2 = 0;
-    objects.setting_bt_2 = 0;
-    objects.logout_bt_2 = 0;
-}
-
-void tick_screen_graph_page() {
-}
-
 
 
 typedef void (*create_screen_func_t)();
@@ -891,7 +732,6 @@ create_screen_func_t create_screen_funcs[] = {
     create_screen_login_page,
     create_screen_home_page,
     create_screen_setting_page,
-    create_screen_graph_page,
 };
 void create_screen(int screen_index) {
     create_screen_funcs[screen_index]();
@@ -905,7 +745,6 @@ delete_screen_func_t delete_screen_funcs[] = {
     delete_screen_login_page,
     delete_screen_home_page,
     delete_screen_setting_page,
-    delete_screen_graph_page,
 };
 void delete_screen(int screen_index) {
     delete_screen_funcs[screen_index]();
@@ -919,7 +758,6 @@ tick_screen_func_t tick_screen_funcs[] = {
     tick_screen_login_page,
     tick_screen_home_page,
     tick_screen_setting_page,
-    tick_screen_graph_page,
 };
 void tick_screen(int screen_index) {
     tick_screen_funcs[screen_index]();
@@ -936,5 +774,4 @@ void create_screens() {
     create_screen_login_page();
     create_screen_home_page();
     create_screen_setting_page();
-    create_screen_graph_page();
 }
