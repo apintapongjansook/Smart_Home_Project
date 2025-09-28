@@ -15,12 +15,16 @@ extern "C"
     void event_handler(lv_event_t *e);
     void updatetime_daytime(lv_timer_t *timer);
     void setuprtc();
-    void sound_timer(lv_timer_t *timer);
+    void sound_timer_cb(lv_timer_t *timer);
     void setupledc();
     void ledc(lv_timer_t *timer);
     void touchsleep(lv_timer_t *timer);
     void lightsensor(lv_timer_t *timer);
-
+    void dht_timer(lv_timer_t *timer);
+    void motion(lv_timer_t *timer);
+    void opendoor(lv_timer_t *timer);
+    void opendoor2();
+    
 #ifdef __cplusplus
 }
 #endif

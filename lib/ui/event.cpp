@@ -5,13 +5,23 @@
 #include <SPI.h>
 #include "touch.hpp"
 #include <ESP32Servo.h>
-
+#include "DHT.h"
+#include <TFT_eSPI.h>
 
 ESP32Time rtc(3600*7);
 Servo myServo;
+lv_timer_t * sound_timer = NULL;
+TFT_eSPI tft = TFT_eSPI();
 
 //--------------setup sound sensor---------//
 const int micPin = 26;   // ขา ADC ของ ESP32
+const int DHTPIN = 17;
+#define DHTTYPE  DHT11
+const int BUZZER = 25;
+
+DHT dht(DHTPIN, DHTTYPE);
+static bool buzzerOn = false;   // เก็บสถานะ Buzzer
+static const float TEMP_THRESHOLD = 27.60; // กำหนดอุณหภูมิที่ให้ buzzer ติด
 
 const unsigned long SAMPLE_WINDOW = 50;  // ms
 const unsigned long CLAP_TIMEOUT = 800;  // ms รอ clap ที่ 2
@@ -35,7 +45,9 @@ int TIMEOUT = 30000 ;  // เวลา timeout 15 วินาที
 
 unsigned long lastTouchMillis = 0;
 
-#define LDR_DO 21
+#define LDR_DO 13
+
+#define PIR_PIN 21
 
 
 
@@ -60,7 +72,7 @@ void event_handler(lv_event_t *e) {
         const char *username = lv_textarea_get_text(objects.username_txarea);
         const char *password = lv_textarea_get_text(objects.password_txarea);
         if(strcmp(username ,"admin") == 0 && strcmp(password , "1234") == 0) {
-            lv_scr_load(objects.home_page);
+            lv_scr_load(objects.setting_page);
         }
     }
     //หน้า monitor
@@ -78,6 +90,16 @@ void event_handler(lv_event_t *e) {
     else if(obj == objects.logout_bt_1 && code == LV_EVENT_CLICKED){
         lv_scr_load(objects.login_page);
     }
+    else if(obj == objects.led_sw && code == LV_EVENT_CLICKED){
+        if(lv_obj_has_state(objects.led_sw, LV_STATE_CHECKED)){
+            lv_timer_del(sound_timer);
+            ledState = true;
+        }
+        else{
+            sound_timer = lv_timer_create(sound_timer_cb, 10, NULL);
+            ledState = false;
+        }
+    }
 
 }
 
@@ -89,31 +111,40 @@ void setuprtc(){
     lastTouchMillis = millis();
     pinMode(LDR_DO, INPUT);
     myServo.attach(13);
-    
-    for (int pos = 0; pos <= 180; pos++) {
-    myServo.write(pos);   
-    delay(15);            
-    }
 
-    // หมุนกลับจาก 180° ไป 0°
-    for (int pos = 180; pos >= 0; pos--) {
-        myServo.write(pos);
-        delay(15);
-    }
+    dht.begin();
+    pinMode(BUZZER, OUTPUT);
+    digitalWrite(BUZZER, LOW);
 
-    for (int pos = 0; pos <= 180; pos++) {
-    myServo.write(pos);   
-    delay(15);            
-    }
+    pinMode(PIR_PIN, INPUT);
+    sound_timer = lv_timer_create(sound_timer_cb, 10, NULL);
 
-    // หมุนกลับจาก 180° ไป 0°
-    for (int pos = 180; pos >= 0; pos--) {
-        myServo.write(pos);
-        delay(15);
-    }
 }
 
 
+void dht_timer(lv_timer_t *timer) {
+    float h = dht.readHumidity();
+    float t = dht.readTemperature();
+
+    if (isnan(h) || isnan(t)) {
+        Serial.println("Failed to read from DHT sensor!");
+        return;
+    }
+
+    lv_label_set_text(objects.temp,String(t).c_str());
+    lv_label_set_text(objects.humid,String(h).c_str());
+
+    if (t >= TEMP_THRESHOLD) {
+        digitalWrite(BUZZER, HIGH);
+        delay(1000);
+        digitalWrite(BUZZER, LOW);
+        delay(1000);
+
+    }
+    else if (t < TEMP_THRESHOLD) {
+        digitalWrite(BUZZER, LOW);
+    }
+}
 
 
 void updatetime_daytime(lv_timer_t *timer){
@@ -125,7 +156,7 @@ void updatetime_daytime(lv_timer_t *timer){
 
 
 
-void sound_timer(lv_timer_t *timer) {
+void sound_timer_cb(lv_timer_t *timer) {
     // static variables สำหรับเก็บ state
     static int signalMax = 0, signalMin = 4095;
     static unsigned long windowStart = millis();
@@ -152,9 +183,7 @@ void sound_timer(lv_timer_t *timer) {
             if (clapCount == 0) {
                 clapCount = 1;
                 firstClapTime = now;
-                Serial.println("Clap 1 detected!");
             } else if (clapCount == 1 && (now - firstClapTime) < CLAP_TIMEOUT) {
-                Serial.println("Clap 2 detected! Toggle LED");
                 ledState = !ledState;
                 clapCount = 0; // reset
             }
@@ -168,7 +197,6 @@ void sound_timer(lv_timer_t *timer) {
         // timeout ถ้าเจอ clap แรก แต่ไม่มี clap ที่สอง
         if (clapCount == 1 && (now - firstClapTime) > CLAP_TIMEOUT) {
             clapCount = 0;
-            Serial.println("Timeout reset");
         }
 
         // reset window
@@ -205,9 +233,17 @@ void touchsleep(lv_timer_t *timer){
 
   // ถ้าไม่ได้แตะเกินเวลาที่กำหนด → Sleep
   if (millis() - lastTouchMillis > TIMEOUT) {
-    Serial.println(">>> เข้าสู่โหมด Deep Sleep ...");
     esp_sleep_enable_ext0_wakeup(GPIO_NUM_33, 0);
-    esp_deep_sleep_start();
+
+    digitalWrite(32, LOW);
+    tft.writecommand(0x28);
+
+    esp_light_sleep_start();
+
+    digitalWrite(32, HIGH);
+    tft.writecommand(0x29);  
+    lastTouchMillis = millis();
+
   }
 }
 
@@ -219,4 +255,40 @@ void lightsensor(lv_timer_t *timer){
     else if(rawval == 1){
         lv_label_set_text(objects.light_status,"Light OFF");
     }
+}
+
+void motion(lv_timer_t *timer){
+    int motion = digitalRead(PIR_PIN);
+
+    if (motion == HIGH){
+        lv_label_set_text(objects.pir_stat,"Detect");
+    } 
+    else{
+        lv_label_set_text(objects.pir_stat,"Undetect");
+    }
+}
+
+
+void opendoor(lv_timer_t *timer){
+    char command = 0;
+    if(Serial.available() > 0 ){
+        command = Serial.read();
+    }
+
+    if(command == 'a'){
+        opendoor2();
+        command = 0;
+    }
+}
+
+void opendoor2(){
+    for (int pos = 90; pos <= 0; pos++) {
+            myServo.write(pos);
+            delay(15);
+        }
+        delay(10000);
+        for (int pos = 0; pos >= 90; pos--) {
+            myServo.write(pos);
+            delay(15);
+        }
 }

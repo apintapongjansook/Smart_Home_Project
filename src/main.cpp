@@ -50,7 +50,6 @@
  ******************************************************************************/
 #include <Arduino_GFX_Library.h>
 
-#define GFX_BL DF_GFX_BL // default backlight pin, you may replace DF_GFX_BL to actual backlight pin
 
 /* More dev device declaration: https://github.com/moononournation/Arduino_GFX/wiki/Dev-Device-Declaration */
 #if defined(DISPLAY_DEV_KIT)
@@ -228,15 +227,19 @@ void setup()
     lv_obj_add_event_cb(objects.logout_bt, event_handler,LV_EVENT_CLICKED,NULL);
     lv_obj_add_event_cb(objects.monitor_bt_1, event_handler,LV_EVENT_CLICKED,NULL);
     lv_obj_add_event_cb(objects.logout_bt_1, event_handler,LV_EVENT_CLICKED,NULL);
+    lv_obj_add_event_cb(objects.led_sw, event_handler,LV_EVENT_CLICKED,NULL);
 
     lv_obj_add_flag(objects.login_page, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_timer_create(updatetime_daytime,1000,NULL);
-    lv_timer_create(sound_timer,10,NULL);
     lv_timer_create(ledc,100,NULL);
     lv_timer_create(touchsleep,100,NULL);
     lv_timer_create(lightsensor,100,NULL);
+    lv_timer_create(dht_timer, 2000, NULL);
+    lv_timer_create(motion, 100, NULL);
+    lv_timer_create(opendoor, 100, NULL);
     setuprtc();
+    opendoor2();
 
     Serial.println("Setup done");
   }
