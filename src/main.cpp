@@ -238,8 +238,8 @@ void setup()
     lv_timer_create(dht_timer, 2000, NULL);
     lv_timer_create(motion, 100, NULL);
     lv_timer_create(opendoor, 100, NULL);
+    lv_timer_create(opendoor2_update,50,NULL);
     setuprtc();
-    opendoor2();
 
     Serial.println("Setup done");
   }
@@ -262,5 +262,5 @@ void loop()
   gfx->flush();
 #endif
 
-  delay(5);
+  delay(1);
 }

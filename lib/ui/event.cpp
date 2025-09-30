@@ -14,14 +14,15 @@ lv_timer_t * sound_timer = NULL;
 TFT_eSPI tft = TFT_eSPI();
 
 //--------------setup sound sensor---------//
-const int micPin = 26;   // ขา ADC ของ ESP32
-const int DHTPIN = 17;
+const int micPin = 26;   //sound sensor
+const int DHTPIN = 17; //อุณหภูมิกับตัวความชื้น
 #define DHTTYPE  DHT11
-const int BUZZER = 25;
+const int BUZZER = 25; //ขา Buzzer
+int lightst;
 
 DHT dht(DHTPIN, DHTTYPE);
 static bool buzzerOn = false;   // เก็บสถานะ Buzzer
-static const float TEMP_THRESHOLD = 27.60; // กำหนดอุณหภูมิที่ให้ buzzer ติด
+static float TEMP_THRESHOLD ; // กำหนดอุณหภูมิที่ให้ buzzer ติด
 
 const unsigned long SAMPLE_WINDOW = 50;  // ms
 const unsigned long CLAP_TIMEOUT = 800;  // ms รอ clap ที่ 2
@@ -40,14 +41,14 @@ bool ledState = false;
 #define LEDC_FREQ 5000   // ความถี่ PWM (Hz)
 
 //------------setup touch sleep-------------//
-#define TIRQ_PIN 33     // IRQ Pin ถ้ามี (ถ้าไม่ใช้ใส่ -1)
+#define TIRQ_PIN 33     // IRQ Pin ถ้ามี (ถ้าไม่ใช้ใส่ -1) (ขาจอ)
 int TIMEOUT = 30000 ;  // เวลา timeout 15 วินาที
 
 unsigned long lastTouchMillis = 0;
 
-#define LDR_DO 13
+#define LDR_DO 13 //light sensor pin
 
-#define PIR_PIN 21
+#define PIR_PIN 21 //motion sensor pin
 
 
 
@@ -77,7 +78,7 @@ void event_handler(lv_event_t *e) {
     }
     //หน้า monitor
     else if(obj == objects.setting_bt && code == LV_EVENT_CLICKED){
-        lv_scr_load(objects.setting_page);
+        lv_scr_load(objects.login_page);
     }
     else if(obj == objects.logout_bt && code == LV_EVENT_CLICKED){
         lv_scr_load(objects.login_page);
@@ -110,7 +111,7 @@ void setuprtc(){
     ledcAttachPin(LED_PIN, LEDC_CHANNEL);
     lastTouchMillis = millis();
     pinMode(LDR_DO, INPUT);
-    myServo.attach(13);
+    myServo.attach(14);
 
     dht.begin();
     pinMode(BUZZER, OUTPUT);
@@ -131,18 +132,26 @@ void dht_timer(lv_timer_t *timer) {
         return;
     }
 
-    lv_label_set_text(objects.temp,String(t).c_str());
-    lv_label_set_text(objects.humid,String(h).c_str());
+    lv_label_set_text(objects.temp, String(t).c_str());
+    lv_label_set_text(objects.humid, String(h).c_str());
+
+    char buf[32];
+    lv_roller_get_selected_str(objects.temp_alarm, buf, sizeof(buf));
+    TEMP_THRESHOLD = atof(buf);
+
+    static unsigned long buzzerUntil = 0;
 
     if (t >= TEMP_THRESHOLD) {
-        digitalWrite(BUZZER, HIGH);
-        delay(1000);
-        digitalWrite(BUZZER, LOW);
-        delay(1000);
-
+        if (!buzzerOn) {
+            digitalWrite(BUZZER, HIGH);
+            buzzerOn = true;
+            buzzerUntil = millis() + 1000;   // เปิด buzzer 1 วิ
+        }
     }
-    else if (t < TEMP_THRESHOLD) {
+
+    if (buzzerOn && millis() > buzzerUntil) {
         digitalWrite(BUZZER, LOW);
+        buzzerOn = false;
     }
 }
 
@@ -246,13 +255,12 @@ void touchsleep(lv_timer_t *timer){
 
   }
 }
-
 void lightsensor(lv_timer_t *timer){
-    int rawval = digitalRead(LDR_DO);
-    if(rawval == 0){
+    lightst = digitalRead(LDR_DO);
+    if(lightst == 0){
         lv_label_set_text(objects.light_status,"Light ON");
     }
-    else if(rawval == 1){
+    else if(lightst == 1){
         lv_label_set_text(objects.light_status,"Light OFF");
     }
 }
@@ -262,6 +270,11 @@ void motion(lv_timer_t *timer){
 
     if (motion == HIGH){
         lv_label_set_text(objects.pir_stat,"Detect");
+        if(lightst==1){
+            ledState = true;
+        }else{
+            ledState = false;
+        }
     } 
     else{
         lv_label_set_text(objects.pir_stat,"Undetect");
@@ -276,19 +289,77 @@ void opendoor(lv_timer_t *timer){
     }
 
     if(command == 'a'){
-        opendoor2();
+        opendoor2_start();
         command = 0;
     }
+    opendoor2_update(lv_timer_t *timer);
 }
 
-void opendoor2(){
-    for (int pos = 90; pos <= 0; pos++) {
-            myServo.write(pos);
-            delay(15);
+// ===== Non-blocking Door Control =====
+enum DoorState {
+  DOOR_IDLE,
+  DOOR_OPENING,
+  DOOR_OPENED,
+  DOOR_CLOSING
+};
+
+DoorState doorState = DOOR_IDLE;
+int servoPos = 180;               // เริ่มที่ 180°
+int targetPos = 180;
+unsigned long previousMillisDoor = 0;
+unsigned long stayOpenUntil = 0;
+const int stepDelayDoor = 5;      // ความเร็วเซอร์โว (ms ต่อ 1 step)
+
+void opendoor2_start() 
+{
+  servoPos = 180;         // เริ่มต้นที่ 180
+  targetPos = 130;        // เป้าหมายแรกคือ 130
+  doorState = DOOR_OPENING;
+  previousMillisDoor = millis();
+  myServo.write(servoPos);
+}
+
+void opendoor2_update(lv_timer_t *timer) 
+{
+  unsigned long currentMillis = millis();
+
+  switch (doorState) {
+    case DOOR_OPENING:
+      if (currentMillis - previousMillisDoor >= stepDelayDoor) {
+        previousMillisDoor = currentMillis;
+        if (servoPos > targetPos) {
+          servoPos--;
+          myServo.write(servoPos);
         }
-        delay(10000);
-        for (int pos = 0; pos >= 90; pos--) {
-            myServo.write(pos);
-            delay(15);
+        if (servoPos == targetPos) {
+          doorState = DOOR_OPENED;
+          stayOpenUntil = currentMillis + 10000; // ค้าง 10 วิ
         }
+      }
+      break;
+
+    case DOOR_OPENED:
+      if (currentMillis >= stayOpenUntil) {
+        targetPos = 180;
+        doorState = DOOR_CLOSING;
+      }
+      break;
+
+    case DOOR_CLOSING:
+      if (currentMillis - previousMillisDoor >= stepDelayDoor) {
+        previousMillisDoor = currentMillis;
+        if (servoPos < targetPos) {
+          servoPos++;
+          myServo.write(servoPos);
+        }
+        if (servoPos == targetPos) {
+          doorState = DOOR_IDLE;  // เสร็จสิ้น
+        }
+      }
+      break;
+
+    case DOOR_IDLE:
+    default:
+      break;
+  }
 }

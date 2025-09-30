@@ -23,7 +23,7 @@ extern "C"
     void dht_timer(lv_timer_t *timer);
     void motion(lv_timer_t *timer);
     void opendoor(lv_timer_t *timer);
-    void opendoor2();
+    void opendoor2_update(lv_timer_t *timer);
     
 #ifdef __cplusplus
 }
